@@ -7,6 +7,13 @@ from django.contrib import auth
 # Create your models here.
 
 
+OCUPPATION_CHOISES = (
+    ("COMPANY OWNER", "COMPANY OWNER"),
+    ("FLEET MANAGER", "FLOAT MANAGER"),
+    ("DRIVER", "DRIVER"),
+)
+
+
 
 
 #===========================================================================
@@ -23,19 +30,6 @@ class AccountCategory(models.Model):
 
     def __str__(self):
         return self.title
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -80,11 +74,14 @@ class User(AbstractUser):
 
     username = None
     email = models.EmailField(_('email address'), unique=True)
+
     first_name = models.CharField(max_length=256)
     last_name = models.CharField(max_length=256)
-    company_name = models.CharField(max_length=256, blank=True)
+    company_name = models.CharField(max_length=256, blank=True, default='')
+
     stripe_customer_id = models.CharField(max_length=50, blank=True, null=True)
     one_click_purchasing = models.BooleanField(default=False)
+
     phone = models.CharField(
         verbose_name='phone',
         max_length=20,
@@ -97,6 +94,10 @@ class User(AbstractUser):
     last_token_password = models.CharField(max_length=256,default='-1')
 
     account_category = models.ForeignKey(AccountCategory, null=True, default=None, on_delete=models.SET_NULL)
+    paid_untill = models.DateTimeField(auto_now_add=False, null=True, blank=True)
+
+    zip_code = models.CharField(max_length=256, default='')
+    usa_state = models.CharField(max_length=256, default='')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = [] #email and password are required by default
@@ -134,8 +135,9 @@ class DriverProfile(models.Model):
     last_uid_password = models.CharField(max_length=256,default='-1')
     last_token_password = models.CharField(max_length=256,default='-1')
 
+    dot_number = models.CharField(max_length=256, default='')
+    mc_number = models.CharField(max_length=256, default='')
+    ocupation = models.CharField(max_length=256, choices=OCUPPATION_CHOISES, default='COMPANY OWNER')
+
     def __str__(self):
-        if self.email != None:
-            return self.email
-        else:
-            return 'Anonymous'
+        return first_name + " " + self.last_name

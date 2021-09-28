@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'knox',
     'user_account_app',
+    'truck_management_app',
 ]
 
 MIDDLEWARE = [

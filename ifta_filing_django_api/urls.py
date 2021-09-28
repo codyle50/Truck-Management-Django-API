@@ -23,4 +23,5 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     url(r'^manage-account/', include('user_account_app.urls', namespace='user-account-app-namespace')),
+    url(r'^manage-trucks/', include('truck_management_app.urls', namespace='truck-management-app-namespace')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
