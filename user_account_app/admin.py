@@ -33,3 +33,4 @@ class UserAdmin(DjangoUserAdmin):
 
 admin.site.register(AccountCategory)
 admin.site.register(DriverProfile)
+admin.site.register(Payment)

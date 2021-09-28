@@ -8,4 +8,5 @@ app_name = 'user_account_app'
 
 urlpatterns = [
     url(r'^logout/$', knox_views.LogoutView.as_view(), name='knox-logout-api'),
+    url(r'^signup/$', SignupView.as_view(), name='sign-up-api'),
 ]

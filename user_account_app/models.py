@@ -140,4 +140,24 @@ class DriverProfile(models.Model):
     ocupation = models.CharField(max_length=256, choices=OCUPPATION_CHOISES, default='COMPANY OWNER')
 
     def __str__(self):
-        return first_name + " " + self.last_name
+        return self.first_name + " " + self.last_name
+
+
+
+
+
+
+
+
+#===========================================================================
+#   PAYMENT MODEL
+#===========================================================================
+class Payment(models.Model):
+    user = models.ForeignKey(User, null=True, default=None, on_delete=models.SET_NULL)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    amount = models.FloatField(default=0.0)
+    stripe_charge_id = models.CharField(max_length=50)
+
+    def __str__(self):
+        return "S"
+        return self.user
