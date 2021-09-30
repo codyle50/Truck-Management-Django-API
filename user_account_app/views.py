@@ -36,11 +36,20 @@ from knox.models import AuthToken
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
+class CheckAuthenticatedView(RetrieveAPIView):
+
+    serializer_class = UserCRUDSerializer
+
+    def get_object(self):
+        print(self.request)
+        return self.request.user
+
+
+
 class SignupView(GenericAPIView):
     serializer_class = UserRegisterSerializer
 
     def post(self, request, *args, **kwargs):
-        # return Response({"Result":"S"}, status=status.HTTP_200_OK)
         data = request.data
         password = data['password']
         re_password = data['re_password']
@@ -59,10 +68,6 @@ class SignupView(GenericAPIView):
         user = user_serializer.save()
         user.is_active = False
         # generate code here to send with email
-        result['user'] = UserCRUDSerializer(
-            user,
-            context = self.get_serializer_context()).data
-        result['token'] = AuthToken.objects.create(user)[1]
 
         user.last_uid=urlsafe_base64_encode(force_bytes(user.pk))
         user.last_token=default_token_generator.make_token(user)
@@ -165,6 +170,12 @@ class SignupView(GenericAPIView):
             # email = EmailMultiAlternatives(email_subject, to=[to_admin_email])
             # email.attach_alternative(admin_message, "text/html")
             # email.send()
+
+            result['user'] = UserCRUDSerializer(
+                user,
+                context = self.get_serializer_context()).data
+            result['token'] = AuthToken.objects.create(user)[1]
+
             return Response({'Result': result}, status=status.HTTP_200_OK)
 
         except stripe.error.CardError as e:
@@ -190,3 +201,54 @@ class SignupView(GenericAPIView):
 
         user.delete()
         return response
+
+
+
+
+
+
+
+class LoginView(GenericAPIView):
+    serializer_class = LoginSerializer
+
+    def post(self, request, *args, **kwargs):
+
+        data = request.data
+        result = dict()
+
+        # try:
+        if True:
+            user_serializer = self.get_serializer(data=data)
+
+            if user_serializer.is_valid() == False:
+                return Response({'Result': user_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                user = user_serializer.validated_data
+                result['user'] = UserCRUDSerializer(
+                    user,
+                    context=self.get_serializer_context()).data
+                result['token'] = AuthToken.objects.create(user)[1]
+                return Response({'Result': result}, status=status.HTTP_201_CREATED)
+        # except:
+        else:
+            return Response({'Result': "Error with user credentials"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
+#===============================================================================
+#   Account Category List
+#===============================================================================
+class AccountCategoryListView(ListAPIView):
+    serializer_class = AccountCategorySerializer
+    model = AccountCategory
+    queryset = AccountCategory.objects.all()
+
+
+class AccountCategoryRetrieveView(RetrieveAPIView):
+    serializer_class = AccountCategorySerializer
+    model = AccountCategory
+    lookup_field = 'id'
+    queryset = AccountCategory.objects.all()

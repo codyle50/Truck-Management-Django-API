@@ -44,3 +44,26 @@ class UserCRUDSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+class LoginSerializer(serializers.Serializer):
+
+    email = serializers.CharField(max_length=255)
+    password = serializers.CharField(min_length=8)
+
+    def validate(self, data):
+        user = auth.authenticate(**data)
+        if user and user.is_active:
+            return user
+        elif user:
+            raise serializers.ValidationError("User not active")
+        else:
+            raise serializers.ValidationError("No user")
+        raise serializers.ValidationError("incorrect Credentials")
+
+
+
+class AccountCategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AccountCategory
+        fields = '__all__'
