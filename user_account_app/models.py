@@ -159,5 +159,4 @@ class Payment(models.Model):
     stripe_charge_id = models.CharField(max_length=50)
 
     def __str__(self):
-        return "S"
-        return self.user
+        return self.user.email

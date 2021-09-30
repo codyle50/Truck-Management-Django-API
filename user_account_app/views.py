@@ -17,6 +17,7 @@ from django.utils.encoding import force_bytes
 import json
 from datetime import datetime
 from datetime import date
+from dateutil.relativedelta import relativedelta
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -78,15 +79,14 @@ class SignupView(GenericAPIView):
 
         if(user.account_category.title == "Simple Driver"):
             # If subscibed for the quarter
-            if(time_for_subscription == 1):
-                amount=50
+            if(int(time_for_subscription) > 0 and int(time_for_subscription) < 4):
+                amount = 50 * int(time_for_subscription)
             else:
                 amount=200
 
 
-        # Create payment and activate user
-
-        try:
+        # try:
+        if True:
 
             card_num = request.data['card_num']
             exp_month = request.data['exp_month']
@@ -129,23 +129,8 @@ class SignupView(GenericAPIView):
             user.save()
             payment = Payment(user=user, stripe_charge_id=charge['id'], amount=amount)
             payment.save()
-            if time_for_subscription == 1:
-
-                if datetime.today() < datetime(datetime.today().year, 4, 30):
-                    user.paid_untill = datetime(datetime.today().year, 4, 30)
-
-                elif datetime.today() < datetime(datetime.today().year, 7, 31):
-                    user.paid_untill = datetime(datetime.today().year, 7, 31)
-
-                elif datetime.today() < datetime(datetime.today().year, 10, 31):
-                    user.paid_untill = datetime(datetime.today().year, 10, 31)
-                    print(user.paid_untill)
-
-                else:
-                    user.paid_untill = datetime(datetime.today().year+1, 1, 31)
-            else:
-                user.paid_untill = datetime(datetime.today().year+1, 1, 31)
-
+            paid_untill = add_paid_quarters(int(time_for_subscription), datetime.today())
+            user.paid_untill = paid_untill
             user.save()
 
             # email_subject="Purchase made."
@@ -178,32 +163,80 @@ class SignupView(GenericAPIView):
 
             return Response({'Result': result}, status=status.HTTP_200_OK)
 
-        except stripe.error.CardError as e:
-            response = Response({"Result":"Error with card during payment"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            pass
 
-        except stripe.error.RateLimitError as e:
-            response = Response({"Result":"Rate Limit error during payment"}, status=status.HTTP_400_BAD_REQUEST)
-
-        except stripe.error.InvalidRequestError as e:
-            response = Response({"Result":"Invalid request error during payment"}, status=status.HTTP_400_BAD_REQUEST)
-
-        except stripe.error.AuthenticationError as e:
-            response = Response({"Result":"Authentication error during payment"}, status=status.HTTP_400_BAD_REQUEST)
-
-        except stripe.error.APIConnectionError as e:
-            response = Response({"Result":"API connection error during payment"}, status=status.HTTP_400_BAD_REQUEST)
-
-        except stripe.error.StripeError as e:
-            response = Response({"Result":"Something went wrong during payment"}, status=status.HTTP_400_BAD_REQUEST)
-
-        except:
-            response = Response({"Result":"Error during payment"}, status=status.HTTP_400_BAD_REQUEST)
+        # except stripe.error.CardError as e:
+        #     response = Response({"Result":"Error with card during payment"}, status=status.HTTP_400_BAD_REQUEST)
+        #
+        # except stripe.error.RateLimitError as e:
+        #     response = Response({"Result":"Rate Limit error during payment"}, status=status.HTTP_400_BAD_REQUEST)
+        #
+        # except stripe.error.InvalidRequestError as e:
+        #     response = Response({"Result":"Invalid request error during payment"}, status=status.HTTP_400_BAD_REQUEST)
+        #
+        # except stripe.error.AuthenticationError as e:
+        #     response = Response({"Result":"Authentication error during payment"}, status=status.HTTP_400_BAD_REQUEST)
+        #
+        # except stripe.error.APIConnectionError as e:
+        #     response = Response({"Result":"API connection error during payment"}, status=status.HTTP_400_BAD_REQUEST)
+        #
+        # except stripe.error.StripeError as e:
+        #     response = Response({"Result":"Something went wrong during payment"}, status=status.HTTP_400_BAD_REQUEST)
+        #
+        # except:
+        #     response = Response({"Result":"Error during payment"}, status=status.HTTP_400_BAD_REQUEST)
 
         user.delete()
         return response
 
+#===============================================================================
+#   Helpers
+#===============================================================================
+# def current_time():
+#     today =  datetime.today()
+#     today_year = datetime.today().year
+#
+#     if today < datetime(today_year, 4, 30):
+#         return datetime(today_year, 4, 30)
+#
+#     elif today < datetime(today_year, 7, 31):
+#         return datetime(today_year, 7, 31)
+#
+#     elif today < datetime(today_year, 10, 31):
+#         return = datetime(today_year, 10, 31)
+#
+#     else:
+#         return = datetime(today_year+1, 1, 31)
+#===============================================
+def current_time_modified(current_time_date):
+    today =  current_time_date
+    today_year = current_time_date.year
 
+    if today < datetime(today_year, 4, 30):
+        return datetime(today_year, 4, 30)
 
+    elif today < datetime(today_year, 7, 31):
+        return datetime(today_year, 7, 31)
+
+    elif today < datetime(today_year, 10, 31):
+        return datetime(today_year, 10, 31)
+
+    else:
+        return datetime(today_year+1, 1, 31)
+#===============================================
+def add_paid_quarters(quarters, current_time_date):
+    if quarters == 1:
+        return current_time_date
+    elif quarters == 2:
+        current_time_date = current_time_date + relativedelta(months = 3)
+        return current_time_modified(current_time_date)
+    elif quarters == 3:
+        current_time_date = current_time_date + relativedelta(months = 6)
+        return current_time_modified(current_time_date)
+    else:
+        current_time_date = current_time_date + relativedelta(months = 9)
+        return current_time_modified(current_time_date)
 
 
 
@@ -232,6 +265,8 @@ class LoginView(GenericAPIView):
         # except:
         else:
             return Response({'Result': "Error with user credentials"}, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 
