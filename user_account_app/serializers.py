@@ -13,7 +13,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'password', 'first_name', 'last_name','stripe_customer_id','phone', 'company_name', 'zip_code', 'usa_state']
+        fields = ['id', 'email', 'password', 'first_name', 'last_name','stripe_customer_id','phone', 'company_name', 'zip_code', 'usa_state', 'dot_number', 'mc_number', 'occupation']
         extra_kwargs = {'password':{'witre_only':True, 'required':True}}
 
     def create(self, validated_data):
@@ -60,6 +60,15 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("No user")
         raise serializers.ValidationError("incorrect Credentials")
 
+
+
+
+# class DriverProfileSerializer(serializers.ModelSerializer):
+#
+#     class Meta:
+#         model = DriverProfile
+#         fields = ['first_name', 'last_name', 'driver_phone', 'dot_number', 'mc_number', 'ocupation', 'password', 'driver_email']
+#
 
 
 class AccountCategorySerializer(serializers.ModelSerializer):

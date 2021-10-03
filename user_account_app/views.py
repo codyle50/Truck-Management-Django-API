@@ -70,8 +70,12 @@ class SignupView(GenericAPIView):
         user.is_active = False
         # generate code here to send with email
 
-        user.last_uid=urlsafe_base64_encode(force_bytes(user.pk))
-        user.last_token=default_token_generator.make_token(user)
+        uid_token = urlsafe_base64_encode(force_bytes(user.pk))
+        last_token = default_token_generator.make_token(user)
+
+        user.last_uid=uid_token
+        user.last_token=last_token
+        user.last_token_password=urlsafe_base64_encode(force_bytes(uid_token))
 
         user.account_category = AccountCategory.objects.get(id=data['account_category_id'])
 
@@ -133,17 +137,29 @@ class SignupView(GenericAPIView):
             user.paid_untill = paid_untill
             user.save()
 
-            # email_subject="Purchase made."
-            # message=render_to_string('purchase-made.html', {
-            #     'user': order.user_email,
-            #     'image': order.product.product.image,
-            #     'amount_of_product': str(order.product.amount),
-            #     'total_amount':str("{:.2f}".format(order.get_total_price())),
-            # })
-            # to_email = order.user_email
-            # email = EmailMultiAlternatives(email_subject, to=[to_email])
-            # email.attach_alternative(message, "text/html")
-            # email.send()
+            if(int(time_for_subscription) == 1):
+                unit_of_quarters = "quarter"
+            elif (int(time_for_subscription) < 4):
+                unit_of_quarters = "quarters"
+            else:
+                unit_of_quarters = "year"
+
+            print(user.account_category)
+            email_subject="Subscription Bought."
+            message=render_to_string('user_account_app/subscription_bought.html', {
+                'user': user.email,
+                'total_amount':str(amount),
+                "amount_of_quarters": time_for_subscription,
+                "unit_of_quarters": unit_of_quarters,
+                "paid_untill": user.paid_untill.strftime("%-d %B %Y"),
+                # "uid": user.last_uid,
+                # "token":user.last_token,
+                # "account_password":user.last_token_password,
+            })
+            to_email = user.email
+            email = EmailMultiAlternatives(email_subject, to=[to_email])
+            email.attach_alternative(message, "text/html")
+            email.send()
             #
             # admin_message=render_to_string('admin-purchase-made.html',{
             #     'user': order.user_email,
@@ -193,22 +209,6 @@ class SignupView(GenericAPIView):
 #===============================================================================
 #   Helpers
 #===============================================================================
-# def current_time():
-#     today =  datetime.today()
-#     today_year = datetime.today().year
-#
-#     if today < datetime(today_year, 4, 30):
-#         return datetime(today_year, 4, 30)
-#
-#     elif today < datetime(today_year, 7, 31):
-#         return datetime(today_year, 7, 31)
-#
-#     elif today < datetime(today_year, 10, 31):
-#         return = datetime(today_year, 10, 31)
-#
-#     else:
-#         return = datetime(today_year+1, 1, 31)
-#===============================================
 def current_time_modified(current_time_date):
     today =  current_time_date
     today_year = current_time_date.year
@@ -265,7 +265,6 @@ class LoginView(GenericAPIView):
         # except:
         else:
             return Response({'Result': "Error with user credentials"}, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 

@@ -32,5 +32,5 @@ class UserAdmin(DjangoUserAdmin):
     # list_filter = ['staff','admin']
 
 admin.site.register(AccountCategory)
-admin.site.register(DriverProfile)
+# admin.site.register(DriverProfile)
 admin.site.register(Payment)

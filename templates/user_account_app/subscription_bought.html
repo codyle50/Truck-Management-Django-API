@@ -1,10 +1,11 @@
 {% autoescape off %}
 <div style="margin-left: 20px !important; padding: 10px !important; border: 1px solid #bf1e2d !important;" >
 <h3 style="color:#bf1e2d !important; font-weight: 300 !important;">Hello {{user}},</h3>
-    <p style="font-weight: 300 !important;"> Thank you for buying at <a href='https://127.0.0.1:3000/'>Ifta Filing</a>.</p>
+    <p style="font-weight: 300 !important;"> Thank you for buying at <a href='http://127.0.0.1:3000/'>Ifta Filing</a>.</p>
     <p style="font-weight: 300 !important;">Here is a resume of your order:</p>
 
-    <p style="font-weight: 300 !important;">Amount of quarters bought: {{amount_of_quarters}}</p>
+
+    <p style="font-weight: 300 !important;">Amount bought: {{amount_of_quarters}} {{unit_of_quarters}}</p>
 
     <p style="font-weight: 300 !important;">Paid untill: {{paid_untill}}</p>
 
@@ -13,10 +14,10 @@
     <p style="font-weight: 300 !important;">If it is not you please ignore this email</p>
     <br />
 
-    <p style="font-weight: 300 !important;">To sign in a new driver with this account, go to <a href='https://127.0.0.1:3000/drivers/create/{{uid}}/{{token}}'>this link</a> with the folowing password:</p>
+    <!-- <p style="font-weight: 300 !important;">To sign in a new driver with this account, go to <a href='http://127.0.0.1:3000/manage-account/drivers/create/{{uid}}/{{token}}'>this link</a> with the folowing password:</p>
     <p style="font-weight: 300 !important;">Password : {{account_password}}</p>
-    <br />
+    <br /> -->
 
-    <p style="font-weight: 300 !important;">For any questions or help contact us at <span style="color: #bf1e2d !important; font-weight: 300 !important">Signsfortrucks@gmail.com</span></p>
+    <p style="font-weight: 300 !important;">For any questions or help contact us at <span style="color: #bf1e2d !important; font-weight: 300 !important">iftaFiling@gmail.com</span></p>
     </div>
 {% endautoescape %}

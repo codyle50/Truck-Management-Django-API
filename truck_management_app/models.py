@@ -1,5 +1,5 @@
 from django.db import models
-from user_account_app.models import DriverProfile
+from user_account_app.models import User
 
 # Create your models here.
 
@@ -12,7 +12,7 @@ from user_account_app.models import DriverProfile
 class Truck(models.Model):
     plate = models.CharField(max_length=256)
     nickname = models.CharField(max_length=256)
-    driver = models.ForeignKey(DriverProfile, null=True, on_delete=models.SET_NULL, default=None)
+    driver = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, default=None)
 
     def __str__(self):
         return self.plate + " - " + self.nickname
