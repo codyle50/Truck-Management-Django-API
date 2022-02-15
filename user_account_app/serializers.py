@@ -21,6 +21,14 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         return user
 
 
+class DriverSerializer(serializers.ModelSerializer):
+    email = serializers.CharField(max_length=255)
+    password = serializers.CharField(min_length=8)
+
+    class Meta:
+        model = Driver
+        fields = '__all__'
+
 
 class UserCRUDSerializer(serializers.ModelSerializer):
 
@@ -29,7 +37,7 @@ class UserCRUDSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = '__all__'
+        exclude = ('drivers',)
 
     def update(self, instance, validated_data):
 

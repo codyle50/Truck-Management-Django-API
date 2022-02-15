@@ -13,7 +13,7 @@ class UserAdmin(DjangoUserAdmin):
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         (_('Personal info'), {'fields': ('first_name', 'last_name')}),
-        (_('Extra Info'), {'fields' : ('company_name','one_click_purchasing', 'stripe_customer_id')}),
+        (_('Extra Info'), {'fields' : ('company_name','one_click_purchasing', 'stripe_customer_id', 'drivers')}),
         (_('Account Finance Info'), {'fields' : ('account_category','paid_untill')}),
         (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser',
                                        'groups', 'user_permissions')}),
@@ -31,6 +31,6 @@ class UserAdmin(DjangoUserAdmin):
     ordering = ('email',)
     # list_filter = ['staff','admin']
 
+admin.site.register(Driver)
 admin.site.register(AccountCategory)
-# admin.site.register(DriverProfile)
 admin.site.register(Payment)

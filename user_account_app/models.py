@@ -9,7 +9,6 @@ from django.contrib import auth
 
 OCUPPATION_CHOISES = (
     ("COMPANY OWNER", "COMPANY OWNER"),
-    ("FLEET MANAGER", "FLEET MANAGER"),
     ("DRIVER", "DRIVER"),
 )
 
@@ -23,12 +22,44 @@ OCUPPATION_CHOISES = (
 class AccountCategory(models.Model):
     title = models.CharField(max_length=256)
     max_amount_of_trucks = models.IntegerField(default=1)
+    max_amount_of_drivers = models.IntegerField(default=1)
 
     class Meta:
         verbose_name_plural='account categories'
 
     def __str__(self):
         return self.title
+
+
+
+# #===========================================================================
+# #   DRIVER PROFILE MODEL
+# #===========================================================================
+class Driver(models.Model):
+
+    first_name = models.CharField(max_length=256, default='')
+    last_name = models.CharField(max_length=256, default='')
+    password = models.CharField(max_length=50, default='-1')
+    email = models.EmailField(max_length=256, unique=True, default='')
+
+    phone = models.CharField(
+        verbose_name='phone',
+        max_length=20,
+        unique=True,
+        default=''
+    )
+
+    last_uid = models.CharField(max_length=256,default='-1')
+    last_token = models.CharField(max_length=256,default='-1')
+    last_uid_password = models.CharField(max_length=256,default='-1')
+    last_token_password = models.CharField(max_length=256,default='-1')
+
+    zip_code = models.CharField(max_length=256, default='')
+    usa_state = models.CharField(max_length=256, default='')
+    ocupation = models.CharField(max_length=256, choices=OCUPPATION_CHOISES, default='DRIVER')
+
+    def __str__(self):
+        return self.first_name + " " + self.last_name
 
 
 
@@ -102,6 +133,8 @@ class User(AbstractUser):
     mc_number = models.CharField(max_length=256, default='')
     occupation = models.CharField(max_length=256, choices=OCUPPATION_CHOISES, default='COMPANY OWNER')
 
+    drivers = models.ManyToManyField(Driver, related_name='company_owners')
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = [] #email and password are required by default
 
@@ -117,37 +150,6 @@ class Company(models.Model):
     owner = models.ForeignKey(User, null=True, default=None, on_delete=models.SET_NULL)
 
 
-
-# #===========================================================================
-# #   DRIVER PROFILE MODEL
-# #===========================================================================
-# class DriverProfile(models.Model):
-#
-#     user = models.ForeignKey(User, null=True, default=None, on_delete=models.SET_NULL)
-#
-#     first_name = models.CharField(max_length=256, default='')
-#     last_name = models.CharField(max_length=256, default='')
-#     password = models.CharField(max_length=50, default='-1')
-#     driver_email = models.EmailField(max_length=256, unique=True, default='')
-#
-#     driver_phone = models.CharField(
-#         verbose_name='phone',
-#         max_length=20,
-#         unique=True,
-#         default=''
-#     )
-#
-#     last_uid = models.CharField(max_length=256,default='-1')
-#     last_token = models.CharField(max_length=256,default='-1')
-#     last_uid_password = models.CharField(max_length=256,default='-1')
-#     last_token_password = models.CharField(max_length=256,default='-1')
-#
-#     dot_number = models.CharField(max_length=256, default='')
-#     mc_number = models.CharField(max_length=256, default='')
-#     ocupation = models.CharField(max_length=256, choices=OCUPPATION_CHOISES, default='COMPANY OWNER')
-#
-#     def __str__(self):
-#         return self.first_name + " " + self.last_name
 
 
 
