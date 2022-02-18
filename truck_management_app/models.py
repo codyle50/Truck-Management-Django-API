@@ -27,8 +27,8 @@ class Quarter(models.Model):
     number = models.IntegerField(default=0)
     year = models.IntegerField(default=0)
 
-    total_toll_milles = models.FloatField(default=0.0)
-    total_non_toll_milles = models.FloatField(default=0.0)
+    total_toll_miles = models.FloatField(default=0.0)
+    total_non_toll_miles = models.FloatField(default=0.0)
     total_gallons = models.FloatField(default=0.0)
     total_taxes = models.FloatField(default=0.0)
     total_mpg = models.FloatField(default=0.0)
@@ -36,7 +36,28 @@ class Quarter(models.Model):
     truck = models.ForeignKey(Truck, null=True, on_delete=models.SET_NULL, default=None)
 
     def __str__(self):
-        return "Quarter " + self.number + " - " + self.year
+        return "Quarter " + str(self.number) + " - " + str(self.year)
+
+
+#===========================================================================
+#   New Entry
+#===========================================================================
+class NewEntry(models.Model):
+    day = models.IntegerField(default=0)
+    month = models.IntegerField(default=0)
+    year = models.IntegerField(default=0)
+
+    total_toll_miles = models.FloatField(default=0.0)
+    total_non_toll_miles = models.FloatField(default=0.0)
+    total_gallons = models.FloatField(default=0.0)
+    price = models.FloatField(default=0.0)
+    usa_state = models.CharField(max_length=256, default="-1")
+    current_quarter = models.IntegerField(default=1)
+    truck = models.ForeignKey(Truck, null=True, on_delete=models.SET_NULL, default=None)
+    driver = models.ForeignKey(Driver, null=True, on_delete=models.SET_NULL, default=None)
+
+    def __str__(self):
+        return "New Entry " + str(self.month) + "/" + str(self.day) + "/" + str(self.year)
 
 
 
@@ -47,8 +68,8 @@ class StateReport(models.Model):
     name = models.CharField(max_length=256)
     initials = models.CharField(max_length=256)
 
-    total_toll_milles = models.FloatField(default=0.0)
-    total_non_toll_milles = models.FloatField(default=0.0)
+    total_toll_miles = models.FloatField(default=0.0)
+    total_non_toll_miles = models.FloatField(default=0.0)
     total_gallons = models.FloatField(default=0.0)
     total_taxes = models.FloatField(default=0.0)
     total_mpg = models.FloatField(default=0.0)

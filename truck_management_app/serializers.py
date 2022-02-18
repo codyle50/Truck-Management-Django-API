@@ -24,3 +24,17 @@ class TruckInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Truck
         fields = '__all__'
+
+class NewEntrySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = NewEntry
+        exclude  = ('truck', 'driver',)
+
+class NewEntrySerializerComplex(serializers.ModelSerializer):
+
+    driver = DriverSimpleSerializer()
+
+    class Meta:
+        model = NewEntry
+        exclude = ( 'truck', )

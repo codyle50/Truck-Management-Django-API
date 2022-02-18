@@ -30,7 +30,7 @@ from .models import *
 from .serializers import *
 
 from truck_management_app.models import Truck
-from truck_management_app.sertializers import TruckSerializer, TruckInfoSerializer
+from truck_management_app.serializers import TruckSerializer, TruckInfoSerializer
 
 import stripe
 from knox.models import AuthToken
@@ -64,7 +64,6 @@ class DriverLogoutView(APIView):
             if request.data["email"] != request.data["token"]:
                 return Response({"Result": "Error"}, status=status.HTTP_400_BAD_REQUEST)
             driver = Driver.objects.get(email=request.data["email"])
-            print("SH")
             return Response({"Result":"Success"}, status=status.HTTP_200_OK)
         except:
             return Response({"Result": "Error"}, status=status.HTTP_400_BAD_REQUEST)
@@ -180,7 +179,6 @@ class SignupView(GenericAPIView):
                 print("Owner is drving")
                 driver_serializer = DriverSerializer(data=data)
                 if driver_serializer.is_valid() == False:
-                    print(driver_serializer.errors)
                     return Response({"Result": driver_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
                 driver = driver_serializer.save()
                 user.drivers.add(driver)
