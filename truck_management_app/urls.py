@@ -7,4 +7,5 @@ app_name = 'truck_management_app'
 urlpatterns = [
     url(r'^new-entry/(?P<truck_id>[0-9]+)/$', NewEntryView.as_view(), name='new-entry-api'),
     url(r'^all-entries/(?P<owner_id>[0-9]+)/(?P<truck_id>[0-9]+)/$', ListAllQuarterEntry.as_view(), name='list-all-new-entries-api'),
+    url(r'^calculate-quarter-taxes/(?P<owner_id>[0-9]+)/(?P<truck_id>[0-9]+)/$', CalculateQuarterTaxesView.as_view(), name='calculate-quarter-taxes-api'),
 ]

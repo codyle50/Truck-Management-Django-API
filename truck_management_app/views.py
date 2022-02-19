@@ -82,6 +82,11 @@ class NewEntryView(APIView):
                 quarter = Quarter(number = current_quarter, year=year, truck=truck)
                 quarter.save()
 
+            quarter.total_toll_miles = quarter.total_toll_miles + new_entry.total_toll_miles
+            quarter.total_non_toll_miles = quarter.total_non_toll_miles + new_entry.total_non_toll_miles
+            quarter.total_gallons = quarter.total_gallons + new_entry.total_gallons
+            quarter.save()
+
             try:
                 state_report = StateReport.objects.get(quarter=quarter, name=data['usa_state'], initials=data['initials'])
             except:
@@ -135,6 +140,61 @@ class ListAllQuarterEntry(APIView):
             return Response({"Result": "Error"}, status=status.HTTP_400_BAD_REQUEST)
 
 
+
+
+
+
+class CalculateQuarterTaxesView(APIView):
+
+    def post(self, request, owner_id, truck_id, format=None):
+        if (True):
+            owner = User.objects.get(id=owner_id)
+            truck = Truck.objects.get(owner=owner, id=truck_id)
+
+            month = request.data['month']
+            year = request.data['year']
+
+            current_quarter = 1
+            if month > 3:
+                current_quarter = 2
+            if month > 6:
+                current_quarter = 3
+            if month > 9:
+                current_quarter = 4
+
+            quarter = Quarter.objects.get(number = current_quarter, year=year, truck=truck)
+
+            mpg = quarter.total_toll_miles / quarter.total_gallons
+            quarter.total_mpg = round(mpg,2)
+            quarter.save()
+
+            quarter_fuel_tax_owned = 0
+
+            state_reports = StateReport.objects.filter(quarter = quarter)
+            for state_report in state_reports:
+                tax_gallons = state_report.total_toll_miles / mpg
+                state_tax = StateTaxes.objects.get(name = state_report.name ,number = current_quarter, year=year)
+                net_tax_gallons = tax_gallons - state_report.total_gallons
+                state_report.fuel_tax_owned = net_tax_gallons * state_tax.tax
+                print(net_tax_gallons)
+                print(net_tax_gallons * state_tax.tax)
+                state_report.save()
+                quarter_fuel_tax_owned = quarter_fuel_tax_owned + state_report.fuel_tax_owned
+
+            quarter.fuel_tax_owned = quarter_fuel_tax_owned
+            quarter.save()
+
+            quarter_serializer = QuarterReportSerializer(quarter).data
+            state_reports_serializer = StateReportSerializer(state_reports, many=True).data
+
+            print(quarter_serializer)
+            print(state_reports_serializer)
+
+            return Response({"Quarter":quarter_serializer, "State_Reports": state_reports_serializer}, status=status.HTTP_200_OK)
+
+            # except:
+        else:
+            return Response({"Result": "Error"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 

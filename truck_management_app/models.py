@@ -33,6 +33,8 @@ class Quarter(models.Model):
     total_taxes = models.FloatField(default=0.0)
     total_mpg = models.FloatField(default=0.0)
 
+    fuel_tax_owned = models.FloatField(default=0.0)
+
     truck = models.ForeignKey(Truck, null=True, on_delete=models.SET_NULL, default=None)
 
     def __str__(self):
@@ -72,7 +74,7 @@ class StateReport(models.Model):
     total_non_toll_miles = models.FloatField(default=0.0)
     total_gallons = models.FloatField(default=0.0)
     total_taxes = models.FloatField(default=0.0)
-    total_mpg = models.FloatField(default=0.0)
+    fuel_tax_owned = models.FloatField(default=0.0)
 
     quarter = models.ForeignKey(Quarter, null=True, on_delete=models.SET_NULL, default=None)
 
@@ -97,4 +99,4 @@ class StateTaxes(models.Model):
         verbose_name_plural='state taxes'
 
     def __str__(self):
-        return self.name + " (" + self.initials + ") - Quarter " + self.number + " - " + self.year
+        return self.name + " (" + self.initials + ") - Quarter " + str(self.number) + " - " + str(self.year)

@@ -38,3 +38,15 @@ class NewEntrySerializerComplex(serializers.ModelSerializer):
     class Meta:
         model = NewEntry
         exclude = ( 'truck', )
+
+class QuarterReportSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Quarter
+        exclude = ( 'truck', )
+
+
+class StateReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StateReport
+        exclude = ('quarter',)
