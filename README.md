@@ -9,3 +9,9 @@ The plans (subscriptions) are meant for small to professional business, and so t
 The owner of the truck buys the subscription, as the _IFTA Taxes_ depends on the data from the truck and not of the driver, each subscription has a maximum limit of both trucks and drivers. Hence, a driver can register a new record for a truck if and only if the owner's subscription is valid.
 
 __NOTE:__ A driver can work for several owners and can drive several trucks.
+
+### TODO:
+1. Add Token Authentication when company owner
+2. Add Some similar auth method for drivers
+3. Email support
+4. Check if user has paid the service

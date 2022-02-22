@@ -254,13 +254,13 @@ class SignupView(GenericAPIView):
         #     response = Response({"Result":"Error during payment"}, status=status.HTTP_400_BAD_REQUEST)
 
         user.delete()
-        return response
-
+        # return response
+        return Response({"Result":"Error during payment"}, status=status.HTTP_400_BAD_REQUEST)
 #===============================================================================
 #   Helpers
 #===============================================================================
 def current_time_modified(current_time_date):
-    today =  current_time_date
+    today = current_time_date
     today_year = current_time_date.year
 
     if today < datetime(today_year, 4, 30):
@@ -277,7 +277,7 @@ def current_time_modified(current_time_date):
 #===============================================
 def add_paid_quarters(quarters, current_time_date):
     if quarters == 1:
-        return current_time_date
+        return current_time_modified(current_time_date)
     elif quarters == 2:
         current_time_date = current_time_date + relativedelta(months = 3)
         return current_time_modified(current_time_date)
@@ -311,6 +311,7 @@ class LoginView(GenericAPIView):
                     result['account_type'] = "DRIVER"
                     return Response({'Result': result}, status=status.HTTP_201_CREATED)
                 except:
+                    print(user_serializer.errors)
                     return Response({'Result': "No user with that credentials"}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 user = user_serializer.validated_data
@@ -431,3 +432,126 @@ class deleteTruckFromCompany(APIView):
         return Response({"Result": "Success"}, status=status.HTTP_200_OK)
 
 
+
+class ResetPasswordView(APIView):
+
+    def post(self, request, id, format=None):
+        data = request.data
+
+        new_password = data["password"]
+        new_re_password = data["re_password"]
+
+        try:
+            if new_password == new_re_password:
+                try:
+                    user = User.objects.get(id=id)
+                    try:
+                        user.set_password(new_password)
+                        user.save()
+                        return Response({'Result': "Success"}, status=status.HTTP_200_OK)
+                    except:
+                        return Response({'Result': "Password does not meet requirements"}, status=status.HTTP_400_BAD_REQUEST)
+                except:
+                    driver = Driver.objects.get(id=id)
+                    driver.password = new_password
+                    driver.save()
+                    return Response({'Result': "Success"}, status=status.HTTP_200_OK)
+            else:
+                return Response({'Result': "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'Result': "Error with user credentials"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ExtendSubscription(APIView):
+
+    def post(self, request, id, format=None):
+        card_num = request.data['card_num']
+        exp_month = request.data['exp_month']
+        exp_year = request.data['exp_year']
+        cvc = request.data['cvc']
+
+        token = stripe.Token.create(
+            card={
+                "number": card_num,
+                "exp_month": int(exp_month),
+                "exp_year": int(exp_year),
+                "cvc": cvc
+            },
+        )
+
+        user = User.objects.get(id=id)
+
+        time_for_subscription = request.data['quarters_amount']
+
+        if (user.account_category.title == "Simple Driver"):
+            # If subscibed for the quarter
+            if (int(time_for_subscription) > 0 and int(time_for_subscription) < 4):
+                amount = 50 * int(time_for_subscription)
+            else:
+                # Discount of 20 USD if 4 quarters = 1 year
+                amount = 180
+
+        elif (user.account_category.title == "Business Starter"):
+            # If subscibed for the quarter
+            if (int(time_for_subscription) > 0 and int(time_for_subscription) < 4):
+                amount = 80 * int(time_for_subscription)
+            else:
+                # Discount of 20 USD if 4 quarters = 1 year
+                amount = 300
+
+        elif (user.account_category.title == "Professional Trucking"):
+            # If subscibed for the quarter
+            if (int(time_for_subscription) > 0 and int(time_for_subscription) < 4):
+                amount = 150 * int(time_for_subscription)
+            else:
+                # Discount of 100 USD if 4 quarters = 1 year
+                amount = 500
+
+        charge = stripe.Charge.create(
+            amount=amount,
+            currency="usd",
+            source=token
+        )
+
+        user.is_active = True
+        user.save()
+        payment = Payment(user=user, stripe_charge_id=charge['id'], amount=amount)
+        payment.save()
+        current_payment_date = current_time_modified(datetime.today())
+
+        if(user.paid_untill.year > current_payment_date.year or (user.paid_untill.month >= current_payment_date.month and user.paid_untill.year == current_payment_date.year)):
+            paid_untill = add_paid_quarters(int(time_for_subscription), datetime(user.paid_untill.year, user.paid_untill.month, user.paid_untill.day))
+        else:
+            paid_untill = add_paid_quarters(int(time_for_subscription), datetime.today())
+
+        print(paid_untill)
+
+        user.paid_untill = paid_untill
+        user.save()
+
+        return Response({'Result': "Success"}, status=status.HTTP_200_OK)
+
+
+class EditUserAccountInfoView(APIView):
+    def post(self, request, id, format=None):
+
+        data = request.data
+        user = User.objects.get(id=id)
+
+        user.first_name = data["first_name"]
+        user.last_name = data["last_name"]
+        user.phone = data["phone"]
+
+        user.save()
+
+        if user.email != data["email"]:
+            try:
+                user = User.objects.get(email=data['email'])
+                return Response({'Result': "User already exists with that email"}, status=status.HTTP_400_BAD_REQUEST)
+            except:
+                user.email = data["email"]
+                user.save()
+                return Response({'Result': "Success"}, status=status.HTTP_200_OK)
+
+
+        return Response({'Result': "Success"}, status=status.HTTP_200_OK)

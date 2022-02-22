@@ -20,4 +20,7 @@ urlpatterns = [
     url(r'^update-truck-info/(?P<id>[0-9]+)/(?P<truck_id>[0-9]+)/$', UpdateTruckInfo.as_view(), name='update-truck-info-api'),
     url(r'^delete-company-driver/(?P<id>[0-9]+)/(?P<driver_id>[0-9]+)/$', deleteDriverFromCompany.as_view(), name='delete-driver-company-api'),
     url(r'^delete-company-truck/(?P<id>[0-9]+)/(?P<truck_id>[0-9]+)/$', deleteTruckFromCompany.as_view(), name='delete-truck-company-api'),
+    url(r'^reset-password/(?P<id>[0-9]+)/$', ResetPasswordView.as_view(), name='reset-password-api'),
+    url(r'^extend-subscription/(?P<id>[0-9]+)/$', ExtendSubscription.as_view(), name='reset-password-api'),
+    url(r'^edit-account-info/(?P<id>[0-9]+)/$', EditUserAccountInfoView.as_view(), name='edit-account-info-api'),
 ]
