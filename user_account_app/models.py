@@ -12,6 +12,12 @@ OCUPPATION_CHOISES = (
     ("DRIVER", "DRIVER"),
 )
 
+OFFERJOB_CHOICES = (
+    ("AVAILABLE", "AVAILABLE"),
+    ("TAKEN", "TAKEN"),
+    ("REJECTED", "REJECTED"),
+    ("CANCELED", "CANCELED"),
+)
 
 
 
@@ -169,3 +175,16 @@ class Payment(models.Model):
 
     def __str__(self):
         return self.user.email
+
+
+
+#===========================================================================
+#   OfferJob MODEL
+#===========================================================================
+class OfferJob(models.Model):
+    user = models.ForeignKey(User, null=True, default=None, on_delete=models.SET_NULL)
+    driver = models.ForeignKey(Driver, null=True, default=None, on_delete=models.SET_NULL)
+    status = models.CharField(max_length=256, choices=OFFERJOB_CHOICES, default="AVAILABLE")
+
+    def __str__(self):
+        return self.user.email + " " + self.driver.email + " - " + self.status
