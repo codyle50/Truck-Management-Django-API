@@ -23,4 +23,6 @@ urlpatterns = [
     url(r'^reset-password/(?P<id>[0-9]+)/$', ResetPasswordView.as_view(), name='reset-password-api'),
     url(r'^extend-subscription/(?P<id>[0-9]+)/$', ExtendSubscription.as_view(), name='reset-password-api'),
     url(r'^edit-account-info/(?P<id>[0-9]+)/$', EditUserAccountInfoView.as_view(), name='edit-account-info-api'),
+    url(r'^add-driver/(?P<id>[0-9]+)/$', AddDriverRequestView.as_view(), name='add-driver-api'),
+    url(r'^driver-sign-up/$', RegisterDriver.as_view(), name='driver-sign-up-api'),
 ]

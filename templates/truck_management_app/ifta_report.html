@@ -1,0 +1,84 @@
+{% load bootstrap5 %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ifta Report</title>
+</head>
+<body>
+ <center>
+    <h2>IFTA Report</h2>
+    <table border="0.1" class="table table-dark">
+         <thead>
+        <tr>
+            <th style="padding-top:2px">State</th>
+            <th style="padding-top:2px">Total Taxable Miles</th>
+            <th style="padding-top:2px">Total Non Taxable Miles</th>
+            <th style="padding-top:2px">Total Taxable Gallons</th>
+            <th style="padding-top:2px">Total Tax Paid Gallons</th>
+            <th style="padding-top:2px">Total Owned</th>
+        </tr>
+ </thead>
+          <tbody>
+        {% for state_report in state_reports %}
+        <tr>
+
+            <td  style="padding-top:2px">
+               {{state_report.name}} {{state_report.initials}}
+            </td>
+
+            <td style="padding-top:2px">
+               {{state_report.total_toll_miles}}
+            </td>
+
+            <td style="padding-top:2px">
+               {{state_report.total_non_toll_miles}}
+            </td>
+
+            <td style="padding-top:2px">
+                {% widthratio state_report.total_toll_miles  quarter.total_mpg 1  %}
+            </td>
+
+            <td style="padding-top:2px">
+                {{state_report.total_gallons}}
+            </td>
+
+            <td style="padding-top:2px">
+                {{state_report.fuel_tax_owned|floatformat:2}}
+            </td>
+        </tr>
+        {% endfor %}
+
+         <tr>
+
+            <td style="padding-top:2px">
+               Total
+            </td>
+
+            <td style="padding-top:2px">
+               {{quarter.total_toll_miles}}
+            </td>
+
+            <td style="padding-top:2px">
+               {{quarter.total_non_toll_miles}}
+            </td>
+
+            <td style="padding-top:2px">
+
+            </td>
+
+            <td style="padding-top:2px">
+                {{quarter.total_gallons}}
+            </td>
+
+            <td style="padding-top:2px">
+                {{quarter.fuel_tax_owned|floatformat:2}}
+            </td>
+        </tr>
+          </tbody>
+    </table>
+</center>
+</body>
+</html>

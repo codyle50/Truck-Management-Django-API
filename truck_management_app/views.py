@@ -1,23 +1,33 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
+from django.views import View
 from django.conf import settings
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import send_mail
 from django.contrib import auth
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
+from django import template
+from django.template.loader import get_template
+from django.core.files import File
+
+import cgi, html
+cgi.escape = html.escape
 
 import json
 from datetime import datetime
 from datetime import date
 from dateutil.relativedelta import relativedelta
+from io import BytesIO
+from xhtml2pdf import pisa
+import os
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -31,6 +41,7 @@ from .serializers import *
 
 from user_account_app.models import User, Driver
 
+from ifta_filing_django_api.settings import ROOT_BASE_DIR
 
 # Create your views here.
 
@@ -294,3 +305,54 @@ class QuarterTaxes(APIView):
             # except:
         else:
             return Response({"Result": "Error"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+def render_to_pdf(template_src, context_dict={}):
+    template = get_template(template_src)
+    html  = template.render(context_dict)
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type='application/pdf')
+    return None
+
+class SendTaxesPDF(APIView):
+    def post(self, request, owner_id, truck_id, format=None):
+
+        this_year = request.data['year']
+        this_month = request.data['month']
+
+        this_quarter = 1
+        if this_month > 3:
+            this_quarter = 2
+        if this_month > 6:
+            this_quarter = 3
+        if this_month > 9:
+            this_quarter = 4
+
+        user = User.objects.get(id=owner_id)
+        truck = Truck.objects.get(id=truck_id)
+
+        quarter = Quarter.objects.get(number=this_quarter, year=this_year, truck=truck)
+        state_reports = StateReport.objects.filter(quarter=quarter)
+
+        context = {"quarter": quarter, "state_reports":state_reports}
+        pdf = render_to_pdf('truck_management_app/ifta_report.html',context_dict=context)
+        filename = "YourPDF_Order{%s}.pdf" %(user.email)
+
+        try:
+            quarter.pdf.storage.delete(quarter.pdf.name)
+        except:
+            pass
+
+        quarter.pdf.save(filename, File(BytesIO(pdf.content)))
+        quarter.save()
+
+        email = EmailMessage(
+            'Ifta Report', 'Here is your Ifta report created by Ifta Filing', [user.email])
+        email.attach_file(os.path.join(ROOT_BASE_DIR, 'media', str(quarter.pdf)))
+        email.send()
+
+        return Response({"Result": "Success"}, status=status.HTTP_200_OK)

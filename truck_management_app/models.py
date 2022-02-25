@@ -37,6 +37,8 @@ class Quarter(models.Model):
 
     truck = models.ForeignKey(Truck, null=True, on_delete=models.SET_NULL, default=None)
 
+    pdf = models.FileField(upload_to='pdfs/', null=True, blank=True)
+
     def __str__(self):
         return "Quarter " + str(self.number) + " - " + str(self.year)
 

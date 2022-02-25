@@ -555,3 +555,40 @@ class EditUserAccountInfoView(APIView):
 
 
         return Response({'Result': "Success"}, status=status.HTTP_200_OK)
+
+
+
+
+
+class AddDriverRequestView(APIView):
+
+    def post(self, request, id, format=None):
+        user = User.objects.get(id=id)
+
+        data = request.data
+
+        driver = Driver.objects.get(email = data["driver_email"])
+
+        try:
+            last_job = OfferJob.objects.get(user=user, driver=driver, status="AVAILABLE")
+            return Response({'Result': "Error Already sent offer"}, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            new_job = OfferJob(user=user, driver=driver, status="AVAILABLE")
+            new_job.save()
+            return Response({'Result': "Success"}, status=status.HTTP_200_OK)
+
+
+class RegisterDriver(APIView):
+    def post(self, request, format=None):
+
+        data = request.data
+        try:
+            driver = Driver.objects.get(email=data["email"])
+            return Response({'Result': "Error Driver Already Exists"}, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            driver_serializer = DriverSerializer(data=data)
+            if driver_serializer.is_valid() == False:
+                print(driver_serializer.errors)
+                return Response({'Result': driver_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            driver = driver_serializer.save()
+            return Response({'Result': "Success"}, status=status.HTTP_200_OK)
