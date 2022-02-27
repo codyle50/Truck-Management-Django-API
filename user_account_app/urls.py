@@ -25,4 +25,5 @@ urlpatterns = [
     url(r'^edit-account-info/(?P<id>[0-9]+)/$', EditUserAccountInfoView.as_view(), name='edit-account-info-api'),
     url(r'^add-driver/(?P<id>[0-9]+)/$', AddDriverRequestView.as_view(), name='add-driver-api'),
     url(r'^driver-sign-up/$', RegisterDriver.as_view(), name='driver-sign-up-api'),
+    url(r'^edit-driver-account-info/(?P<id>[0-9]+)/$', EditDriverAccountInfoView.as_view(), name='edit-account-info-api'),
 ]

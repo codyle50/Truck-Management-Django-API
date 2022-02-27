@@ -595,4 +595,22 @@ class RegisterDriver(APIView):
 
 
 
+class EditDriverAccountInfoView(APIView):
+    def post(self, request, id, format=None):
+
+        data = request.data
+        driver = Driver.objects.get(id=id)
+
+        driver.first_name = data["first_name"]
+        driver.last_name = data["last_name"]
+        driver.phone = data["phone"]
+
+        driver.save()
+
+        driver_serializer = DriverSerializer(driver).data
+
+        result = dict()
+        result["user"] = driver_serializer
+
+        return Response({'Result': result}, status=status.HTTP_200_OK)
 
