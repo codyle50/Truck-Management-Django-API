@@ -379,16 +379,83 @@ class CurrentTruck(APIView):
             driver = Driver.objects.get(id=id)
             truck = Truck.objects.get(plate=data["plate"])
             owner = truck.owner
-            print("OK 1")
             if True:
-                print("Error 1")
+                try:
+                    old_truck = Truck.objects.get(current_driver=driver)
+                    old_truck.current_driver = None
+                    old_truck.save()
+                except:
+                    pass
                 owner.drivers.all().get(id = driver.id)
-                print("Error 2")
                 truck.current_driver = driver
                 truck.save()
                 truck_serializer = TruckSerializer(truck).data
+
                 return Response({"Result": truck_serializer}, status=status.HTTP_200_OK)
             else:
                 return Response({"Result": None}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"Result": None}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CurrentDriverEntries(APIView):
+
+    def post(self, request, id, truck_id, format=None):
+        driver = Driver.objects.get(id=id)
+        truck = Truck.objects.get(id=truck_id)
+
+        this_year = request.data['year']
+        this_month = request.data['month']
+
+        this_quarter = 1
+        if this_month > 3:
+            this_quarter = 2
+        if this_month > 6:
+            this_quarter = 3
+        if this_month > 9:
+            this_quarter = 4
+
+        entries = NewEntry.objects.filter(driver=driver, truck=truck, current_quarter=this_quarter, year=this_year)
+
+        entries_serializer = NewEntrySerializer(entries, many=True).data
+
+
+        return Response({"Result": entries_serializer}, status=status.HTTP_200_OK)
+
+
+
+class DeleteEntry(APIView):
+
+    def post(self, request, id, truck_id, entry_id, format=None):
+        driver = Driver.objects.get(id=id)
+        truck = Truck.objects.get(id=truck_id)
+
+
+        entry = NewEntry.objects.get(id = entry_id, driver=driver, truck=truck)
+
+        this_year = request.data['year']
+        this_month = request.data['month']
+
+        this_quarter = 1
+        if this_month > 3:
+            this_quarter = 2
+        if this_month > 6:
+            this_quarter = 3
+        if this_month > 9:
+            this_quarter = 4
+
+        quarter = Quarter.objects.get(number=this_quarter, year=this_year, truck=truck)
+        quarter.save()
+
+        quarter.total_toll_miles = quarter.total_toll_miles - entry.total_toll_miles
+        quarter.total_non_toll_miles = quarter.total_non_toll_miles - entry.total_non_toll_miles
+        quarter.total_gallons = quarter.total_gallons - entry.total_gallons
+        quarter.save()
+
+
+        entry.delete()
+
+
+
+
+        return Response({"Result": "Success"}, status=status.HTTP_200_OK)

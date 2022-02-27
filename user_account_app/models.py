@@ -174,7 +174,10 @@ class Payment(models.Model):
     stripe_charge_id = models.CharField(max_length=50)
 
     def __str__(self):
-        return self.user.email
+        if(self.user is not None):
+            return self.user.email
+        else:
+            return "Anonymous"
 
 
 
