@@ -356,3 +356,39 @@ class SendTaxesPDF(APIView):
         email.send()
 
         return Response({"Result": "Success"}, status=status.HTTP_200_OK)
+
+
+
+
+class CurrentTruck(APIView):
+
+    def get(self, request, id, format=None):
+        try:
+            driver = Driver.objects.get(id=id)
+            truck = Truck.objects.get(current_driver = driver)
+            truck_serializer = TruckSerializer(truck).data
+            return Response({"Result": truck_serializer}, status=status.HTTP_200_OK)
+        except:
+            return Response({"Result": None}, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request, id, format=None):
+
+        data = request.data
+
+        if True:
+            driver = Driver.objects.get(id=id)
+            truck = Truck.objects.get(plate=data["plate"])
+            owner = truck.owner
+            print("OK 1")
+            if True:
+                print("Error 1")
+                owner.drivers.all().get(id = driver.id)
+                print("Error 2")
+                truck.current_driver = driver
+                truck.save()
+                truck_serializer = TruckSerializer(truck).data
+                return Response({"Result": truck_serializer}, status=status.HTTP_200_OK)
+            else:
+                return Response({"Result": None}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"Result": None}, status=status.HTTP_400_BAD_REQUEST)

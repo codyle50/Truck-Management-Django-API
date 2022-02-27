@@ -12,4 +12,5 @@ urlpatterns = [
     url(r'^year/(?P<owner_id>[0-9]+)/(?P<truck_id>[0-9]+)/(?P<year>[0-9]+)/$', YearTaxes.as_view(), name='year-api'),
     url(r'^quarter-tax/(?P<owner_id>[0-9]+)/(?P<truck_id>[0-9]+)/(?P<year>[0-9]+)/(?P<number>[0-9]+)/$', QuarterTaxes.as_view(), name='year-api'),
     url(r'^ifta-report-pdf/(?P<owner_id>[0-9]+)/(?P<truck_id>[0-9]+)/$', SendTaxesPDF.as_view(), name='ifta-report-pdf-test-api'),
+    url(r'^truck-current-driver/(?P<id>[0-9]+)/$', CurrentTruck.as_view(), name='truck-current-driver-api'),
 ]

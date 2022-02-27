@@ -592,3 +592,7 @@ class RegisterDriver(APIView):
                 return Response({'Result': driver_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
             driver = driver_serializer.save()
             return Response({'Result': "Success"}, status=status.HTTP_200_OK)
+
+
+
+
