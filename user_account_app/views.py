@@ -614,3 +614,59 @@ class EditDriverAccountInfoView(APIView):
 
         return Response({'Result': result}, status=status.HTTP_200_OK)
 
+
+
+class SendRequestResetPassword(APIView):
+    def post(self, request, format=None):
+
+        # current_site = get_current_site(request)
+        email_subject = "Reset your password"
+        if True:
+            try:
+                user = User.objects.get(email=request.data['email'])
+            except:
+                user = Driver.objects.get(email=request.data['email'])
+            user.last_uid_password = urlsafe_base64_encode(force_bytes(user.pk))
+            user.save()
+            user.last_token_password = default_token_generator.make_token(user)
+            user.save()
+            message = render_to_string('user_account_app/reset_password.html', {
+                'user': user.email,
+                # 'domain': current_site.domain,
+                'uid': user.last_uid_password,
+                'token': user.last_token_password,
+            })
+            to_email = user.email
+            email = EmailMessage(email_subject, message, to=[to_email])
+            email.send()
+            request_response = 'Email sent with a link to change password'
+            return Response({"Result": request_response}, status=status.HTTP_200_OK)
+
+        else:
+            return Response({"Result": "Error User with that email do not exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class ResetPassword(APIView):
+
+    def post(self, request, uid, token, format=None):
+
+        try:
+            password = request.data['password']
+            re_password = request.data['re_password']
+            if password != re_password:
+                return Response({'Result': 'Password does not match'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+            try:
+                user = User.objects.get(last_uid_password = uid, last_token_password = token)
+                user.set_password(password)
+            except:
+                user = Driver.objects.get(last_uid_password = uid, last_token_password = token)
+                user.password = password
+
+
+            user.save()
+            return Response({"Result": "Success"}, status=status.HTTP_200_OK)
+        except:
+            return Response({'Result':'Error'}, status=status.HTTP_400_BAD_REQUEST)

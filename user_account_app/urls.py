@@ -26,4 +26,6 @@ urlpatterns = [
     url(r'^add-driver/(?P<id>[0-9]+)/$', AddDriverRequestView.as_view(), name='add-driver-api'),
     url(r'^driver-sign-up/$', RegisterDriver.as_view(), name='driver-sign-up-api'),
     url(r'^edit-driver-account-info/(?P<id>[0-9]+)/$', EditDriverAccountInfoView.as_view(), name='edit-account-info-api'),
+    url(r'^send-request-reset-password/$', SendRequestResetPassword.as_view(), name='reset-password-message-api'),
+    url(r'^reset-password/(?P<uid>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,32})/$', ResetPassword.as_view(), name='reset-password-api'),
 ]
