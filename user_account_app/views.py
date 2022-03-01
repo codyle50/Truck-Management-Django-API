@@ -72,20 +72,25 @@ class SignupView(GenericAPIView):
     serializer_class = UserRegisterSerializer
 
     def post(self, request, *args, **kwargs):
+
         data = request.data
         password = data['password']
         re_password = data['re_password']
 
+        if password != re_password:
+            return Response({"Result": "Passwords do not match", "Error": "Simple"}, status=status.HTTP_400_BAD_REQUEST)
+
         result = dict()
 
-        if password != re_password:
-            return Response({"Result": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
-
+        # Serialize User
 
         user_serializer = self.get_serializer(data=data)
+        errors = list()
         if user_serializer.is_valid() == False:
-            print(user_serializer.errors)
-            return Response({"Result": user_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            serializer_errors = user_serializer.errors
+            for error_name, error_description in serializer_errors.items():
+                errors.append((error_name, error_description))
+            return Response({"Result": errors, "Error": "Serializer"}, status=status.HTTP_400_BAD_REQUEST)
 
         user = user_serializer.save()
         user.is_active = False
@@ -127,22 +132,27 @@ class SignupView(GenericAPIView):
                 amount = 500
 
 
-        # try:
-        if True:
+        try:
 
             card_num = request.data['card_num']
             exp_month = request.data['exp_month']
             exp_year = request.data['exp_year']
             cvc = request.data['cvc']
 
-            token = stripe.Token.create(
-                card={
-                    "number": card_num,
-                    "exp_month": int(exp_month),
-                    "exp_year": int(exp_year),
-                    "cvc": cvc
-                },
-            )
+            try:
+                token = stripe.Token.create(
+                    card={
+                        "number": card_num,
+                        "exp_month": int(exp_month),
+                        "exp_year": int(exp_year),
+                        "cvc": cvc
+                    },
+                )
+
+            except:
+                user.delete()
+                return Response({"Result": "Error with the information of the payment method used", "Error": "Simple"},
+                                status=status.HTTP_400_BAD_REQUEST)
 
             if request.data['save_payment_info']:
                 user.one_click_purchasing = True
@@ -176,11 +186,22 @@ class SignupView(GenericAPIView):
             user.save()
 
             if(request.data['is_driving'] == True):
-                print("Owner is drving")
-                driver_serializer = DriverSerializer(data=data)
-                if driver_serializer.is_valid() == False:
-                    return Response({"Result": driver_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-                driver = driver_serializer.save()
+
+                try:
+                    driver = Driver.objects.get(email=request.data["email"])
+
+                except:
+                    driver_serializer = DriverSimpleSerializer(data=data)
+
+                    if driver_serializer.is_valid() == False:
+                        serializer_errors = driver_serializer.errors
+                        for error_name, error_description in serializer_errors.items():
+                            errors.append((error_name, error_description))
+                        return Response({"Result": errors, "Error": "Serializer"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+                    driver = driver_serializer.save()
+
                 user.drivers.add(driver)
                 user.save()
 
@@ -229,33 +250,70 @@ class SignupView(GenericAPIView):
 
             return Response({'Result': result}, status=status.HTTP_200_OK)
 
-        else:
+        except stripe.error.CardError as e:
+            user.delete()
+            try:
+                driver.delete()
+            except:
+                pass
+            response = Response({"Result":"Error with card during payment", "Error": "Simple"}, status=status.HTTP_400_BAD_REQUEST)
+
+        except stripe.error.RateLimitError as e:
+            user.delete()
+            try:
+                driver.delete()
+            except:
+                pass
+            response = Response({"Result":"Rate Limit error during payment", "Error": "Simple"}, status=status.HTTP_400_BAD_REQUEST)
+
+        except stripe.error.InvalidRequestError as e:
+            user.delete()
+            try:
+                driver.delete()
+            except:
+                pass
+            response = Response({"Result":"Invalid request error during payment", "Error": "Simple"}, status=status.HTTP_400_BAD_REQUEST)
+
+        except stripe.error.AuthenticationError as e:
+            user.delete()
+            try:
+                driver.delete()
+            except:
+                pass
+            response = Response({"Result":"Authentication error during payment", "Error": "Simple"}, status=status.HTTP_400_BAD_REQUEST)
+
+        except stripe.error.APIConnectionError as e:
+            user.delete()
+            try:
+                driver.delete()
+            except:
+                pass
+            response = Response({"Result":"API connection error during payment", "Error": "Simple"}, status=status.HTTP_400_BAD_REQUEST)
+
+        except stripe.error.StripeError as e:
+            user.delete()
+            try:
+                driver.delete()
+            except:
+                pass
+            response = Response({"Result":"Something went wrong during payment", "Error": "Simple"}, status=status.HTTP_400_BAD_REQUEST)
+
+        except:
+            user.delete()
+            try:
+                driver.delete()
+            except:
+                pass
+            response = Response({"Result":"Error during payment", "Error": "Simple"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+        try:
+            user.delete()
+            driver.delete()
+        except:
             pass
-
-        # except stripe.error.CardError as e:
-        #     response = Response({"Result":"Error with card during payment"}, status=status.HTTP_400_BAD_REQUEST)
-        #
-        # except stripe.error.RateLimitError as e:
-        #     response = Response({"Result":"Rate Limit error during payment"}, status=status.HTTP_400_BAD_REQUEST)
-        #
-        # except stripe.error.InvalidRequestError as e:
-        #     response = Response({"Result":"Invalid request error during payment"}, status=status.HTTP_400_BAD_REQUEST)
-        #
-        # except stripe.error.AuthenticationError as e:
-        #     response = Response({"Result":"Authentication error during payment"}, status=status.HTTP_400_BAD_REQUEST)
-        #
-        # except stripe.error.APIConnectionError as e:
-        #     response = Response({"Result":"API connection error during payment"}, status=status.HTTP_400_BAD_REQUEST)
-        #
-        # except stripe.error.StripeError as e:
-        #     response = Response({"Result":"Something went wrong during payment"}, status=status.HTTP_400_BAD_REQUEST)
-        #
-        # except:
-        #     response = Response({"Result":"Error during payment"}, status=status.HTTP_400_BAD_REQUEST)
-
-        user.delete()
         # return response
-        return Response({"Result":"Error during payment"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"Result":"Error during payment", "Error": "Simple"}, status=status.HTTP_400_BAD_REQUEST)
 #===============================================================================
 #   Helpers
 #===============================================================================

@@ -30,6 +30,17 @@ class DriverSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+
+class DriverSimpleSerializer(serializers.ModelSerializer):
+    email = serializers.CharField(max_length=255)
+    password = serializers.CharField(min_length=8)
+
+    class Meta:
+        model = Driver
+        fields = ('first_name', 'last_name', 'password', 'email', 'phone', 'zip_code', 'usa_state')
+
+
+
 class UserCRUDSerializer(serializers.ModelSerializer):
 
     email = serializers.CharField(max_length=255)
@@ -66,7 +77,7 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("User not active")
         else:
             raise serializers.ValidationError("No user")
-        raise serializers.ValidationError("incorrect Credentials")
+        raise serializers.ValidationError("Incorrect credentials")
 
 
 
