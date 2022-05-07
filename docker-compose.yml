@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: "ifta-filling-api"
+    command: ./entrypoint.sh
+    hostname: api
+    volumes:
+      - django_static_volume:/usr/src/app/static
+      - django_media_volume:/usr/src/app/media
+    ports:
+      - 8000
+    env_file:
+      - ./ifta_filing_django_api/settings/.env
+    links:
+      - db
+  db:
+    image: postgres:13-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=docker_iftafillings_user
+      - POSTGRES_PASSWORD=docker_superiftafillinguser!
+      - POSTGRES_DB=docker_iftafilling_db
+  nginx:
+    build: ./nginx
+    volumes:
+      - django_static_volume:/usr/src/app/static
+      - django_media_volume:/usr/src/app/media
+    ports:
+      - 80:80
+    links:
+      - api
+
+volumes:
+  postgres_data:
+  django_static_volume:
+  django_media_volume:

@@ -7,7 +7,7 @@ from django.contrib import auth
 # Create your models here.
 
 
-OCUPPATION_CHOISES = (
+OCCUPATION_CHOICES = (
     ("COMPANY OWNER", "COMPANY OWNER"),
     ("DRIVER", "DRIVER"),
 )
@@ -62,7 +62,7 @@ class Driver(models.Model):
 
     zip_code = models.CharField(max_length=256, default='')
     usa_state = models.CharField(max_length=256, default='')
-    ocupation = models.CharField(max_length=256, choices=OCUPPATION_CHOISES, default='DRIVER')
+    ocupation = models.CharField(max_length=256, choices=OCCUPATION_CHOICES, default='DRIVER')
 
     def __str__(self):
         return self.first_name + " " + self.last_name
@@ -130,14 +130,14 @@ class User(AbstractUser):
     last_token_password = models.CharField(max_length=256,default='-1')
 
     account_category = models.ForeignKey(AccountCategory, null=True, default=None, on_delete=models.SET_NULL)
-    paid_untill = models.DateTimeField(auto_now_add=False, null=True, blank=True)
+    paid_until = models.DateTimeField(auto_now_add=False, null=True, blank=True)
 
     zip_code = models.CharField(max_length=256, default='')
     usa_state = models.CharField(max_length=256, default='')
 
     dot_number = models.CharField(max_length=256, default='')
     mc_number = models.CharField(max_length=256, default='')
-    occupation = models.CharField(max_length=256, choices=OCUPPATION_CHOISES, default='COMPANY OWNER')
+    occupation = models.CharField(max_length=256, choices=OCCUPATION_CHOICES, default='COMPANY OWNER')
 
     drivers = models.ManyToManyField(Driver, related_name='company_owners')
 

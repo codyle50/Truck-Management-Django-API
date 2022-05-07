@@ -181,8 +181,8 @@ class SignupView(GenericAPIView):
             user.save()
             payment = Payment(user=user, stripe_charge_id=charge['id'], amount=amount)
             payment.save()
-            paid_untill = add_paid_quarters(int(time_for_subscription), datetime.today())
-            user.paid_untill = paid_untill
+            paid_until = add_paid_quarters(int(time_for_subscription), datetime.today())
+            user.paid_until = paid_until
             user.save()
 
             if(request.data['is_driving'] == True):
@@ -218,7 +218,7 @@ class SignupView(GenericAPIView):
                 'total_amount':str(amount),
                 "amount_of_quarters": time_for_subscription,
                 "unit_of_quarters": unit_of_quarters,
-                "paid_untill": user.paid_untill.strftime("%-d %B %Y"),
+                "paid_until": user.paid_until.strftime("%-d %B %Y"),
                 # "uid": user.last_uid,
                 # "token":user.last_token,
                 # "account_password":user.last_token_password,
@@ -577,14 +577,14 @@ class ExtendSubscription(APIView):
         payment.save()
         current_payment_date = current_time_modified(datetime.today())
 
-        if(user.paid_untill.year > current_payment_date.year or (user.paid_untill.month >= current_payment_date.month and user.paid_untill.year == current_payment_date.year)):
-            paid_untill = add_paid_quarters(int(time_for_subscription), datetime(user.paid_untill.year, user.paid_untill.month, user.paid_untill.day))
+        if(user.paid_until.year > current_payment_date.year or (user.paid_until.month >= current_payment_date.month and user.paid_until.year == current_payment_date.year)):
+            paid_until = add_paid_quarters(int(time_for_subscription), datetime(user.paid_until.year, user.paid_until.month, user.paid_until.day))
         else:
-            paid_untill = add_paid_quarters(int(time_for_subscription), datetime.today())
+            paid_until = add_paid_quarters(int(time_for_subscription), datetime.today())
 
-        print(paid_untill)
+        print(paid_until)
 
-        user.paid_untill = paid_untill
+        user.paid_until = paid_until
         user.save()
 
         return Response({'Result': "Success"}, status=status.HTTP_200_OK)

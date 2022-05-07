@@ -1,15 +1,18 @@
 arabic-reshaper==2.1.3
 asgiref==3.4.1
+beautifulsoup4==4.10.0
 certifi==2021.5.30
 cffi==1.14.6
 charset-normalizer==2.0.6
 cryptography==3.4.8
 Django==3.2
+django-bootstrap-v5==1.0.11
 django-cors-headers==3.8.0
 django-environ==0.7.0
 django-rest-knox==4.1.0
 djangorestframework==3.12.4
 future==0.18.2
+gunicorn==20.1.0
 html5lib==1.0b10
 httplib2==0.20.4
 idna==3.2
@@ -24,6 +27,7 @@ pytz==2021.1
 reportlab==3.6.0
 requests==2.26.0
 six==1.16.0
+soupsieve==2.3.1
 sqlparse==0.4.2
 stripe==2.60.0
 urllib3==1.26.7

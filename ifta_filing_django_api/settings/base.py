@@ -28,7 +28,7 @@ TEMPLATES_DIR = os.path.join(ROOT_BASE_DIR,'templates')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.56.1', '127.0.0.1', '192.168.1.32']
+ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', 'localhost']
 
 
 # Application definition
@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'knox',
-    "bootstrap5",
     'user_account_app',
     'truck_management_app',
 ]
