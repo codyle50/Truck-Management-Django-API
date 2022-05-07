@@ -21,7 +21,7 @@
 <a name="intro"></a>
 ## Description
 
-The project __IFTA FILING__ is a managing tool for truck owners to keeps track of the _IFTA Taxes_ for their trucking business. This project has been merged into the __IFTA ya!__ solution that targets truck owner-operators instead of fleet managers.
+The project __IFTA FILLING__ is a managing tool for truck owners to keeps track of the _IFTA Taxes_ for their trucking business. This project has been merged into the __IFTA ya!__ solution that targets truck owner-operators instead of fleet managers.
 
 - ### Some useful notes about the application:
     - The __User Model__ was customized to match the needs of the business. For example, a Stripe Id was added for auto payments, and username was changed to the email. Other fields needed for security features were also added.
