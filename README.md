@@ -1,6 +1,6 @@
 <div align="center">
 
-# IFTA Filing
+# IFTA Filling
 
 ![IF Logo](./.readme_assets/IFTA_Filling_Logo.png)
 
