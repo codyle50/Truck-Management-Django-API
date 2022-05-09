@@ -47,73 +47,71 @@ from ifta_filing_django_api.settings import ROOT_BASE_DIR
 
 class NewEntryView(APIView):
 
-    def post(self, request, truck_id, format=None):
-        data = request.data
+	def post(self, request, truck_id, format=None):
+		data = request.data
 
-        day = data['day']
-        month = data['month']
-        year = data['year']
+		day = data['day']
+		month = data['month']
+		year = data['year']
 
-        current_quarter = 1
-        if month > 3:
-            current_quarter = 2
-        if month > 6:
-            current_quarter = 3
-        if month > 9:
-            current_quarter = 4
+		current_quarter = 1
+		if month > 3:
+			current_quarter = 2
+		if month > 6:
+			current_quarter = 3
+		if month > 9:
+			current_quarter = 4
 
-        # try:
-        if(True):
-            truck = Truck.objects.get(id=truck_id)
-            try:
-                driver = Driver.objects.get(email=data['driver'])
-            except:
-                driver = User.objects.get(email = data['driver'])
+		try:
+			truck = Truck.objects.get(id=truck_id)
+			try:
+				driver = Driver.objects.get(email=data['driver'])
+			except:
+				driver = User.objects.get(email = data['driver'])
 
-            new_entry = NewEntrySerializer(data=data)
-            if new_entry.is_valid() == False:
-                return Response({"Result": new_entry.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-
-            new_entry = new_entry.save()
-
-            try:
-                new_entry.driver = driver
-            except:
-                pass
-            new_entry.quarter_number = current_quarter
-            new_entry.truck=truck
-            new_entry.save()
+			new_entry = NewEntrySerializer(data=data)
+			if new_entry.is_valid() == False:
+				print("Errors")
+				print(new_entry.errors)
+				return Response({"Result": new_entry.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
+			new_entry = new_entry.save()
 
-            try:
-                quarter = Quarter.objects.get(number = current_quarter, year=year, truck=truck)
-            except:
-                quarter = Quarter(number = current_quarter, year=year, truck=truck)
-                quarter.save()
+			try:
+				new_entry.driver = driver
+			except:
+				pass
+			new_entry.current_quarter = current_quarter
+			new_entry.truck=truck
+			new_entry.save()
 
-            quarter.total_toll_miles = quarter.total_toll_miles + new_entry.total_toll_miles
-            quarter.total_non_toll_miles = quarter.total_non_toll_miles + new_entry.total_non_toll_miles
-            quarter.total_gallons = quarter.total_gallons + new_entry.total_gallons
-            quarter.save()
+			try:
+				quarter = Quarter.objects.get(number = current_quarter, year=year, truck=truck)
+			except:
+				quarter = Quarter(number = current_quarter, year=year, truck=truck)
+				quarter.save()
 
-            try:
-                state_report = StateReport.objects.get(quarter=quarter, name=data['usa_state'], initials=data['initials'])
-            except:
-                state_report = StateReport(quarter=quarter, name=data['usa_state'], initials=data['initials'])
-                state_report.save()
+			quarter.total_toll_miles = quarter.total_toll_miles + new_entry.total_toll_miles
+			quarter.total_non_toll_miles = quarter.total_non_toll_miles + new_entry.total_non_toll_miles
+			quarter.total_gallons = quarter.total_gallons + new_entry.total_gallons
+			quarter.save()
 
-            state_report.total_toll_miles = state_report.total_toll_miles + new_entry.total_toll_miles
-            state_report.total_non_toll_miles = state_report.total_non_toll_miles + new_entry.total_non_toll_miles
-            state_report.total_gallons = state_report.total_gallons + new_entry.total_gallons
-            state_report = state_report.save()
-            return Response({"Result": "Success"}, status=status.HTTP_200_OK)
+			try:
+				state_report = StateReport.objects.get(quarter=quarter, name=data['usa_state'], initials=data['initials'])
+			except:
+				state_report = StateReport(quarter=quarter, name=data['usa_state'], initials=data['initials'])
+				state_report.save()
+
+			state_report.total_toll_miles = state_report.total_toll_miles + new_entry.total_toll_miles
+			state_report.total_non_toll_miles = state_report.total_non_toll_miles + new_entry.total_non_toll_miles
+			state_report.total_gallons = state_report.total_gallons + new_entry.total_gallons
+			state_report = state_report.save()
+			return Response({"Result": "Success"}, status=status.HTTP_200_OK)
 
 
-        # except:
-        else:
-            return Response({"Result": "Error"}, status=status.HTTP_400_BAD_REQUEST)
+		except:
+			return Response({"Result": "Error"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -122,33 +120,31 @@ class NewEntryView(APIView):
 
 class ListAllQuarterEntry(APIView):
 
-    def post(self, request, owner_id, truck_id, format=None):
+	def post(self, request, owner_id, truck_id, format=None):
 
-        # try:
-        if(True):
-            owner = User.objects.get(id=owner_id)
-            truck = Truck.objects.get(owner=owner, id=truck_id)
+		try:
+			owner = User.objects.get(id=owner_id)
+			truck = Truck.objects.get(owner=owner, id=truck_id)
 
-            month = request.data['month']
-            year = request.data['year']
+			month = request.data['month']
+			year = request.data['year']
 
-            current_quarter = 1
-            if month > 3:
-                current_quarter = 2
-            if month > 6:
-                current_quarter = 3
-            if month > 9:
-                current_quarter = 4
+			current_quarter = 1
+			if month > 3:
+				current_quarter = 2
+			if month > 6:
+				current_quarter = 3
+			if month > 9:
+				current_quarter = 4
 
-            new_entries = NewEntry.objects.filter(truck=truck, year=year, current_quarter=current_quarter)
+			new_entries = NewEntry.objects.filter(truck=truck, year=year, current_quarter=current_quarter)
 
-            new_entries_serializer = NewEntrySerializerComplex(new_entries, many=True).data
-            return Response(new_entries_serializer, status=status.HTTP_200_OK)
+			new_entries_serializer = NewEntrySerializerComplex(new_entries, many=True).data
+			return Response(new_entries_serializer, status=status.HTTP_200_OK)
 
 
-        # except:
-        else:
-            return Response({"Result": "Error"}, status=status.HTTP_400_BAD_REQUEST)
+		except:
+			return Response({"Result": "Error"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -157,305 +153,299 @@ class ListAllQuarterEntry(APIView):
 
 class CalculateQuarterTaxesView(APIView):
 
-    def post(self, request, owner_id, truck_id, format=None):
-        if (True):
-            owner = User.objects.get(id=owner_id)
-            truck = Truck.objects.get(owner=owner, id=truck_id)
+	def post(self, request, owner_id, truck_id, format=None):
+		try:
+			owner = User.objects.get(id=owner_id)
+			truck = Truck.objects.get(owner=owner, id=truck_id)
 
-            month = request.data['month']
-            year = request.data['year']
+			month = request.data['month']
+			year = request.data['year']
 
-            current_quarter = 1
-            if month > 3:
-                current_quarter = 2
-            if month > 6:
-                current_quarter = 3
-            if month > 9:
-                current_quarter = 4
+			current_quarter = 1
+			if month > 3:
+				current_quarter = 2
+			if month > 6:
+				current_quarter = 3
+			if month > 9:
+				current_quarter = 4
 
-            quarter = Quarter.objects.get(number = current_quarter, year=year, truck=truck)
+			quarter = Quarter.objects.get(number = current_quarter, year=year, truck=truck)
 
-            mpg = quarter.total_toll_miles / quarter.total_gallons
-            quarter.total_mpg = round(mpg,2)
-            quarter.save()
+			mpg = quarter.total_toll_miles / quarter.total_gallons
+			quarter.total_mpg = round(mpg,2)
+			quarter.save()
 
-            quarter_fuel_tax_owned = 0
+			quarter_fuel_tax_owned = 0
 
-            state_reports = StateReport.objects.filter(quarter = quarter)
-            for state_report in state_reports:
-                tax_gallons = state_report.total_toll_miles / mpg
-                state_tax = StateTaxes.objects.get(name = state_report.name ,number = current_quarter, year=year)
-                net_tax_gallons = tax_gallons - state_report.total_gallons
-                state_report.fuel_tax_owned = net_tax_gallons * state_tax.tax
-                state_report.save()
-                quarter_fuel_tax_owned = quarter_fuel_tax_owned + state_report.fuel_tax_owned
+			state_reports = StateReport.objects.filter(quarter = quarter)
+			for state_report in state_reports:
+				tax_gallons = state_report.total_toll_miles / mpg
+				state_tax = StateTaxes.objects.get(name = state_report.name ,number = current_quarter, year=year)
+				net_tax_gallons = tax_gallons - state_report.total_gallons
+				state_report.fuel_tax_owned = net_tax_gallons * state_tax.tax
+				state_report.save()
+				quarter_fuel_tax_owned = quarter_fuel_tax_owned + state_report.fuel_tax_owned
 
-            quarter.fuel_tax_owned = quarter_fuel_tax_owned
-            quarter.save()
+			quarter.fuel_tax_owned = quarter_fuel_tax_owned
+			quarter.save()
 
-            quarter_serializer = QuarterReportSerializer(quarter).data
-            state_reports_serializer = StateReportSerializer(state_reports, many=True).data
+			quarter_serializer = QuarterReportSerializer(quarter).data
+			state_reports_serializer = StateReportSerializer(state_reports, many=True).data
 
-            return Response({"Quarter":quarter_serializer, "State_Reports": state_reports_serializer}, status=status.HTTP_200_OK)
+			return Response({"Quarter":quarter_serializer, "State_Reports": state_reports_serializer}, status=status.HTTP_200_OK)
 
-            # except:
-        else:
-            return Response({"Result": "Error"}, status=status.HTTP_400_BAD_REQUEST)
+		except:
+			return Response({"Result": "Error"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
 class AllTimesTaxesYear(APIView):
 
-    def get(self, request, owner_id, truck_id, format=None):
+	def get(self, request, owner_id, truck_id, format=None):
 
-        # try:
-        if(True):
-            owner = User.objects.get(id=owner_id)
-            truck = Truck.objects.get(owner=owner, id=truck_id)
+		try:
+			owner = User.objects.get(id=owner_id)
+			truck = Truck.objects.get(owner=owner, id=truck_id)
 
-            years = Quarter.objects.filter(truck=truck).values("year")
+			years = Quarter.objects.filter(truck=truck).values("year")
 
-            all_taxes_years = set()
+			all_taxes_years = set()
 
-            for year in years:
-                all_taxes_years.add(year["year"])
+			for year in years:
+				all_taxes_years.add(year["year"])
 
-            return Response({"Result": all_taxes_years}, status=status.HTTP_200_OK)
+			return Response({"Result": all_taxes_years}, status=status.HTTP_200_OK)
 
-            # except:
-        else:
-            return Response({"Result": "Error"}, status=status.HTTP_400_BAD_REQUEST)
+		except:
+			return Response({"Result": "Error"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class YearTaxes(APIView):
 
-    def get(self, request, owner_id, truck_id, year, format=None):
+	def get(self, request, owner_id, truck_id, year, format=None):
 
-        # try:
-        if(True):
-            owner = User.objects.get(id=owner_id)
-            truck = Truck.objects.get(owner=owner, id=truck_id)
+		try:
+			owner = User.objects.get(id=owner_id)
+			truck = Truck.objects.get(owner=owner, id=truck_id)
 
-            print(year)
+			print(year)
 
-            quarters = Quarter.objects.filter(truck=truck, year=year).values("number")
+			quarters = Quarter.objects.filter(truck=truck, year=year).values("number")
 
-            quarters_set = set()
+			quarters_set = set()
 
-            for quarter in quarters:
-                quarters_set.add(quarter["number"])
+			for quarter in quarters:
+				quarters_set.add(quarter["number"])
 
-                print(quarter)
+				print(quarter)
 
-            return Response({"Result": quarters_set}, status=status.HTTP_200_OK)
+			return Response({"Result": quarters_set}, status=status.HTTP_200_OK)
 
-            # except:
-        else:
-            return Response({"Result": "Error"}, status=status.HTTP_400_BAD_REQUEST)
+		except:
+			return Response({"Result": "Error"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class QuarterTaxes(APIView):
 
-    def post(self, request, owner_id, truck_id, year, number, format=None):
-        if (True):
-            owner = User.objects.get(id=owner_id)
-            truck = Truck.objects.get(owner=owner, id=truck_id)
+	def post(self, request, owner_id, truck_id, year, number, format=None):
+		try:
+			owner = User.objects.get(id=owner_id)
+			truck = Truck.objects.get(owner=owner, id=truck_id)
 
-            current_quarter = number
+			current_quarter = number
 
-            quarter = Quarter.objects.get(number = current_quarter, year=year, truck=truck)
+			quarter = Quarter.objects.get(number = current_quarter, year=year, truck=truck)
 
-            mpg = quarter.total_toll_miles / quarter.total_gallons
-            quarter.total_mpg = round(mpg,2)
-            quarter.save()
+			mpg = quarter.total_toll_miles / quarter.total_gallons
+			quarter.total_mpg = round(mpg,2)
+			quarter.save()
 
-            quarter_fuel_tax_owned = 0
+			quarter_fuel_tax_owned = 0
 
-            state_reports = StateReport.objects.filter(quarter = quarter)
+			state_reports = StateReport.objects.filter(quarter = quarter)
 
-            this_year = request.data['year']
-            this_month = request.data['month']
+			this_year = request.data['year']
+			this_month = request.data['month']
 
-            this_quarter = 1
-            if this_month > 3:
-                this_quarter = 2
-            if this_month > 6:
-                this_quarter = 3
-            if this_month > 9:
-                this_quarter = 4
+			this_quarter = 1
+			if this_month > 3:
+				this_quarter = 2
+			if this_month > 6:
+				this_quarter = 3
+			if this_month > 9:
+				this_quarter = 4
 
-            if(this_year != year or this_quarter != current_quarter):
+			if(this_year != year or this_quarter != current_quarter):
 
-                for state_report in state_reports:
-                    tax_gallons = state_report.total_toll_miles / mpg
-                    state_tax = StateTaxes.objects.get(name = state_report.name ,number = current_quarter, year=year)
-                    net_tax_gallons = tax_gallons - state_report.total_gallons
-                    state_report.fuel_tax_owned = net_tax_gallons * state_tax.tax
-                    state_report.save()
-                    quarter_fuel_tax_owned = quarter_fuel_tax_owned + state_report.fuel_tax_owned
+				for state_report in state_reports:
+					tax_gallons = state_report.total_toll_miles / mpg
+					state_tax = StateTaxes.objects.get(name = state_report.name ,number = current_quarter, year=year)
+					net_tax_gallons = tax_gallons - state_report.total_gallons
+					state_report.fuel_tax_owned = net_tax_gallons * state_tax.tax
+					state_report.save()
+					quarter_fuel_tax_owned = quarter_fuel_tax_owned + state_report.fuel_tax_owned
 
-                quarter.fuel_tax_owned = quarter_fuel_tax_owned
-                quarter.save()
+				quarter.fuel_tax_owned = quarter_fuel_tax_owned
+				quarter.save()
 
-            quarter_serializer = QuarterReportSerializer(quarter).data
-            state_reports_serializer = StateReportSerializer(state_reports, many=True).data
+			quarter_serializer = QuarterReportSerializer(quarter).data
+			state_reports_serializer = StateReportSerializer(state_reports, many=True).data
 
-            return Response({"Quarter":quarter_serializer, "State_Reports": state_reports_serializer}, status=status.HTTP_200_OK)
+			return Response({"Quarter":quarter_serializer, "State_Reports": state_reports_serializer}, status=status.HTTP_200_OK)
 
-            # except:
-        else:
-            return Response({"Result": "Error"}, status=status.HTTP_400_BAD_REQUEST)
+		except:
+			return Response({"Result": "Error"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
 
 def render_to_pdf(template_src, context_dict={}):
-    template = get_template(template_src)
-    html  = template.render(context_dict)
-    result = BytesIO()
-    pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
-    if not pdf.err:
-        return HttpResponse(result.getvalue(), content_type='application/pdf')
-    return None
+	template = get_template(template_src)
+	html  = template.render(context_dict)
+	result = BytesIO()
+	pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+	if not pdf.err:
+		return HttpResponse(result.getvalue(), content_type='application/pdf')
+	return None
 
 class SendTaxesPDF(APIView):
-    def post(self, request, owner_id, truck_id, format=None):
+	def post(self, request, owner_id, truck_id, format=None):
 
-        this_year = request.data['year']
-        this_month = request.data['month']
+		this_year = request.data['year']
+		this_month = request.data['month']
 
-        this_quarter = 1
-        if this_month > 3:
-            this_quarter = 2
-        if this_month > 6:
-            this_quarter = 3
-        if this_month > 9:
-            this_quarter = 4
+		this_quarter = 1
+		if this_month > 3:
+			this_quarter = 2
+		if this_month > 6:
+			this_quarter = 3
+		if this_month > 9:
+			this_quarter = 4
 
-        user = User.objects.get(id=owner_id)
-        truck = Truck.objects.get(id=truck_id)
+		user = User.objects.get(id=owner_id)
+		truck = Truck.objects.get(id=truck_id)
 
-        quarter = Quarter.objects.get(number=this_quarter, year=this_year, truck=truck)
-        state_reports = StateReport.objects.filter(quarter=quarter)
+		quarter = Quarter.objects.get(number=this_quarter, year=this_year, truck=truck)
+		state_reports = StateReport.objects.filter(quarter=quarter)
 
-        context = {"quarter": quarter, "state_reports":state_reports}
-        pdf = render_to_pdf('truck_management_app/ifta_report.html',context_dict=context)
-        filename = "YourPDF_Order{%s}.pdf" %(user.email)
+		context = {"quarter": quarter, "state_reports":state_reports}
+		pdf = render_to_pdf('truck_management_app/ifta_report.html',context_dict=context)
+		filename = "YourPDF_Order{%s}.pdf" %(user.email)
 
-        try:
-            quarter.pdf.storage.delete(quarter.pdf.name)
-        except:
-            pass
+		try:
+			quarter.pdf.storage.delete(quarter.pdf.name)
+		except:
+			pass
 
-        quarter.pdf.save(filename, File(BytesIO(pdf.content)))
-        quarter.save()
+		quarter.pdf.save(filename, File(BytesIO(pdf.content)))
+		quarter.save()
 
-        email = EmailMessage(
-            'Ifta Report', 'Here is your Ifta report created by Ifta Filing', [user.email])
-        email.attach_file(os.path.join(ROOT_BASE_DIR, 'media', str(quarter.pdf)))
-        email.send()
+		email = EmailMessage(
+			'Ifta Report', 'Here is your Ifta report created by Ifta Filing', [user.email])
+		email.attach_file(os.path.join(ROOT_BASE_DIR, 'media', str(quarter.pdf)))
+		email.send()
 
-        return Response({"Result": "Success"}, status=status.HTTP_200_OK)
+		return Response({"Result": "Success"}, status=status.HTTP_200_OK)
 
 
 
 
 class CurrentTruck(APIView):
 
-    def get(self, request, id, format=None):
-        try:
-            driver = Driver.objects.get(id=id)
-            truck = Truck.objects.get(current_driver = driver)
-            truck_serializer = TruckSerializer(truck).data
-            return Response({"Result": truck_serializer}, status=status.HTTP_200_OK)
-        except:
-            return Response({"Result": None}, status=status.HTTP_400_BAD_REQUEST)
+	def get(self, request, id, format=None):
+		try:
+			driver = Driver.objects.get(id=id)
+			truck = Truck.objects.get(current_driver = driver)
+			truck_serializer = TruckSerializer(truck).data
+			return Response({"Result": truck_serializer}, status=status.HTTP_200_OK)
+		except:
+			return Response({"Result": None}, status=status.HTTP_400_BAD_REQUEST)
 
-    def post(self, request, id, format=None):
+	def post(self, request, id, format=None):
 
-        data = request.data
+		data = request.data
 
-        if True:
-            driver = Driver.objects.get(id=id)
-            truck = Truck.objects.get(plate=data["plate"])
-            owner = truck.owner
-            if True:
-                try:
-                    old_truck = Truck.objects.get(current_driver=driver)
-                    old_truck.current_driver = None
-                    old_truck.save()
-                except:
-                    pass
-                owner.drivers.all().get(id = driver.id)
-                truck.current_driver = driver
-                truck.save()
-                truck_serializer = TruckSerializer(truck).data
+		if True:
+			driver = Driver.objects.get(id=id)
+			truck = Truck.objects.get(plate=data["plate"])
+			owner = truck.owner
+			if True:
+				try:
+					old_truck = Truck.objects.get(current_driver=driver)
+					old_truck.current_driver = None
+					old_truck.save()
+				except:
+					pass
+				owner.drivers.all().get(id = driver.id)
+				truck.current_driver = driver
+				truck.save()
+				truck_serializer = TruckSerializer(truck).data
 
-                return Response({"Result": truck_serializer}, status=status.HTTP_200_OK)
-            else:
-                return Response({"Result": None}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"Result": None}, status=status.HTTP_400_BAD_REQUEST)
+				return Response({"Result": truck_serializer}, status=status.HTTP_200_OK)
+			else:
+				return Response({"Result": None}, status=status.HTTP_400_BAD_REQUEST)
+		else:
+			return Response({"Result": None}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CurrentDriverEntries(APIView):
 
-    def post(self, request, id, truck_id, format=None):
-        driver = Driver.objects.get(id=id)
-        truck = Truck.objects.get(id=truck_id)
+	def post(self, request, id, truck_id, format=None):
+		driver = Driver.objects.get(id=id)
+		truck = Truck.objects.get(id=truck_id)
 
-        this_year = request.data['year']
-        this_month = request.data['month']
+		this_year = request.data['year']
+		this_month = request.data['month']
 
-        this_quarter = 1
-        if this_month > 3:
-            this_quarter = 2
-        if this_month > 6:
-            this_quarter = 3
-        if this_month > 9:
-            this_quarter = 4
+		this_quarter = 1
+		if this_month > 3:
+			this_quarter = 2
+		if this_month > 6:
+			this_quarter = 3
+		if this_month > 9:
+			this_quarter = 4
 
-        entries = NewEntry.objects.filter(driver=driver, truck=truck, current_quarter=this_quarter, year=this_year)
+		entries = NewEntry.objects.filter(driver=driver, truck=truck, current_quarter=this_quarter, year=this_year)
 
-        entries_serializer = NewEntrySerializer(entries, many=True).data
+		entries_serializer = NewEntrySerializer(entries, many=True).data
 
 
-        return Response({"Result": entries_serializer}, status=status.HTTP_200_OK)
+		return Response({"Result": entries_serializer}, status=status.HTTP_200_OK)
 
 
 
 class DeleteEntry(APIView):
 
-    def post(self, request, id, truck_id, entry_id, format=None):
-        driver = Driver.objects.get(id=id)
-        truck = Truck.objects.get(id=truck_id)
+	def post(self, request, id, truck_id, entry_id, format=None):
+		driver = Driver.objects.get(id=id)
+		truck = Truck.objects.get(id=truck_id)
 
 
-        entry = NewEntry.objects.get(id = entry_id, driver=driver, truck=truck)
+		entry = NewEntry.objects.get(id = entry_id, driver=driver, truck=truck)
 
-        this_year = request.data['year']
-        this_month = request.data['month']
+		this_year = request.data['year']
+		this_month = request.data['month']
 
-        this_quarter = 1
-        if this_month > 3:
-            this_quarter = 2
-        if this_month > 6:
-            this_quarter = 3
-        if this_month > 9:
-            this_quarter = 4
+		this_quarter = 1
+		if this_month > 3:
+			this_quarter = 2
+		if this_month > 6:
+			this_quarter = 3
+		if this_month > 9:
+			this_quarter = 4
 
-        quarter = Quarter.objects.get(number=this_quarter, year=this_year, truck=truck)
-        quarter.save()
+		quarter = Quarter.objects.get(number=this_quarter, year=this_year, truck=truck)
+		quarter.save()
 
-        quarter.total_toll_miles = quarter.total_toll_miles - entry.total_toll_miles
-        quarter.total_non_toll_miles = quarter.total_non_toll_miles - entry.total_non_toll_miles
-        quarter.total_gallons = quarter.total_gallons - entry.total_gallons
-        quarter.save()
-
-
-        entry.delete()
+		quarter.total_toll_miles = quarter.total_toll_miles - entry.total_toll_miles
+		quarter.total_non_toll_miles = quarter.total_non_toll_miles - entry.total_non_toll_miles
+		quarter.total_gallons = quarter.total_gallons - entry.total_gallons
+		quarter.save()
 
 
+		entry.delete()
 
 
-        return Response({"Result": "Success"}, status=status.HTTP_200_OK)
+
+
+		return Response({"Result": "Success"}, status=status.HTTP_200_OK)
